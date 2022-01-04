@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.8
 from telethon import TelegramClient, events
 from telethon.tl.types import PeerChat, PeerUser, PeerChannel
 import configparser
