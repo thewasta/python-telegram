@@ -46,7 +46,6 @@ async def main():
         peer_channel = PeerChannel(int("-{}".format(channel)))
         entity = await client.get_entity(peer_channel)
         channel_name = " ".join(entity.title.split(" ")[:2])
-        print("------ CHANNEL: {}".format(entity))
         async for dialog in client.iter_messages(entity=peer_channel):
             if dialog.media and not hasattr(dialog.media, "photo"):
                 if re.search("video", dialog.media.document.mime_type) or \
@@ -74,9 +73,7 @@ async def download_media(channel_name, dialog, season, chapter):
             tv_show_chapter = re.match("[0-9]{1,2}(x)[0-9]{1,2}", tv_show_with_chapter).group()
             tv_show_name = tv_show_with_chapter.replace(tv_show_chapter, "").replace("-", "")
             if re.match("^[0-9]", tv_show_name):
-                print(tv_show_name.split(" ")[1:])
                 tv_show_name = " ".join(tv_show_name.split(" ")[1:])
-                print(tv_show_name)
             abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", tv_show_name.strip(),
                                     tv_show_chapter.strip() + tv_show_media_mime)
         else:
@@ -94,11 +91,14 @@ async def download_media(channel_name, dialog, season, chapter):
 
 def already_downloaded(media_id):
     result = False
-    with open("downloads.txt") as temp_file:
-        data_file = temp_file.readlines()
-        for line in data_file:
-            if str(media_id) in line:
-                result = True
+    try:
+        with open("downloads.txt", "r") as temp_file:
+            data_file = temp_file.readlines()
+            for line in data_file:
+                if str(media_id) in line:
+                    result = True
+    except:
+        pass
     return result
 
 
