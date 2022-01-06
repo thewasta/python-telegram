@@ -106,11 +106,11 @@ async def download_media(channel_name, dialog, season, chapter):
             os.mkdir(path_to_file.parent.parent)
         if not os.path.exists(path_to_file.parent):
             os.mkdir(path_to_file.parent)
-        logging.info("DOWNLOADING {}".format(str(path_to_file)))
+        logging.info("[DEBUG] DOWNLOADING {}".format(str(path_to_file)))
         global file
         file = path_to_file
         await dialog.download_media(path_to_file, progress_callback=progress)
-        logging.info("FINISHED {}".format(str(path_to_file)))
+        logging.info("[DEBUG] FINISHED {}".format(str(path_to_file)))
         with open("downloads.txt", "a") as file:
             file.write(str(dialog_message_id) + " " + str(path_to_file))
             file.write("\n")
@@ -125,7 +125,7 @@ def already_downloaded(media_id):
                 if str(media_id) in line:
                     result = True
     except:
-        logging.info("Downloads.txt not found")
+        logging.info("[DEBUG] downloads.txt not found")
         pass
     return result
 
@@ -138,6 +138,7 @@ def bot():
     client.run_until_disconnected()
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO, filename='info.log')
+
 if __name__ == "__main__":
     bot()
