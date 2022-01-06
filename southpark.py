@@ -1,10 +1,11 @@
 #!/usr/bin/env python3.8
-from telethon import TelegramClient, events
-from telethon.tl.types import PeerChat, PeerUser, PeerChannel
+from telethon import TelegramClient
+from telethon.tl.types import PeerChannel
 import configparser
 import re
 import os
 from pathlib import Path
+from tqdm import tqdm
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -39,6 +40,13 @@ async def get_chats_data():
         print(dialog.name, ' HAS ID ', dialog.id)
 
 
+def progress(current, total):
+    global pbar
+    global prev_curr
+    pbar.update(current - prev_curr)
+    prev_curr = current
+
+
 async def main():
     counter_season = 30
     for channel in channels_videos:
@@ -46,8 +54,10 @@ async def main():
         peer_channel = PeerChannel(int("-{}".format(channel)))
         entity = await client.get_entity(peer_channel)
         channel_name = " ".join(entity.title.split(" ")[:2])
+        global prev_curr
         async for dialog in client.iter_messages(entity=peer_channel):
             if dialog.media and not hasattr(dialog.media, "photo"):
+                prev_curr = 0
                 if re.search("video", dialog.media.document.mime_type) or \
                         re.search(".rar", dialog.media.document.mime_type):
                     await download_media(channel_name, dialog, counter_season, counter)
@@ -58,6 +68,7 @@ async def main():
 
 
 async def download_media(channel_name, dialog, season, chapter):
+    global pbar
     dialog_message_id = dialog.media.document.id
     if not already_downloaded(dialog_message_id):
         mime_type = dialog.media.document.mime_type
@@ -84,7 +95,8 @@ async def download_media(channel_name, dialog, season, chapter):
         if not os.path.exists(path_to_file.parent):
             os.mkdir(path_to_file.parent)
         print("DOWNLOADING {}".format(str(path_to_file)))
-        await dialog.download_media(path_to_file)
+        pbar = tqdm(total=dialog.media.document.size, unit="B", unit_scale=True)
+        await dialog.download_media(path_to_file, progress_callback=progress)
         print("FINISHED {}".format(str(path_to_file)))
         with open("downloads.txt", "a") as file:
             file.write(str(dialog_message_id) + " " + str(path_to_file))
