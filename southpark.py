@@ -83,10 +83,10 @@ async def download_media(channel_name, dialog, season, chapter):
             os.mkdir(path_to_file.parent.parent)
         if not os.path.exists(path_to_file.parent):
             os.mkdir(path_to_file.parent)
+        await dialog.download_media(path_to_file)
         with open("downloads.txt", "a") as file:
             file.write(str(dialog_message_id) + " " + str(path_to_file))
             file.write("\n")
-        # await dialog.download_media(path_to_file)
 
 
 def already_downloaded(media_id):
