@@ -50,8 +50,8 @@ def progress(current, total):
     current_m = bytes_to(current, "m")
     total_b = bytes_to(total, "m")
     path = "/".join(str(file).split("/")[-3:])
-    print("Download total: {}% {} mb/{} mb {}"
-          .format(int((current / total) * 100), current_m, total_b, path))
+    logging.info("Download total: {}% {} mb/{} mb {}"
+                 .format(int((current / total) * 100), current_m, total_b, path))
 
 
 async def main():
@@ -138,6 +138,6 @@ def bot():
     client.run_until_disconnected()
 
 
-logging.basicConfig(level=logging.INFO, filename='logs.log')
+logging.basicConfig(level=logging.DEBUG)
 if __name__ == "__main__":
     bot()

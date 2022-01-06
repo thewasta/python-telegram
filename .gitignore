@@ -1,7 +1,7 @@
 config.ini
 .idea
 dialogs.txt
-anon.session
+anon.*
 */
 doc.txt
 downloads.txt
