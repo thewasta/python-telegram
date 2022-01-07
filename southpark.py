@@ -76,7 +76,6 @@ async def main():
 async def download_media(channel_name, dialog, season, chapter):
     dialog_message_id = dialog.media.document.id
     if not already_downloaded(dialog_message_id):
-
         mime_type = dialog.media.document.mime_type
         if dialog.message != "":
             file_name = dialog.message + "." + mime_type.split("/")[1]
@@ -95,8 +94,11 @@ async def download_media(channel_name, dialog, season, chapter):
                                     tv_show_chapter.strip() + tv_show_media_mime)
         elif channel_name == "One Piece":
             tv_show_media_mime = file_name[-4:]
-            tv_show_chapter = file_name.split(" ")[0].replace("#", "")
+            parser_chapter = file_name.split(" ")[0].replace("#", " ").replace("Cap", "")
+            tv_show_chapter = "One Piece S01" "E" + parser_chapter
             tv_show_name = channel_name
+            if ".mp4" in tv_show_chapter:
+                tv_show_chapter = tv_show_chapter.replace(".mp4", "")
             abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", tv_show_name.strip(),
                                     tv_show_chapter.strip() + tv_show_media_mime)
         else:
