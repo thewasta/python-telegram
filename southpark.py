@@ -73,6 +73,29 @@ async def main():
     exit()
 
 
+def one_piece_path(dialog) -> str:
+    show_name = "One Piece"
+    dialog_document = dialog.media.document
+    mime_type = dialog_document.mime_type
+
+    dialog_message = dialog.message
+    file_type = "." + mime_type.split("/")[1]
+    if "#" in dialog_message:
+        chapter = dialog_message.split(" ")[0]
+    else:
+        chapter = dialog_message
+        if "x-matroska" in mime_type or "x-msvideo" in mime_type:
+            file_type = dialog_document.attributes[0].file_name[-4:]
+    file_name = chapter + file_type
+    if "#" in file_name:
+        file_name = "One Piece S01E" + file_name.replace("#", "").replace("Cap", "")
+    if "145" in file_name:
+        file_name = "One Piece S01E" + file_name.replace("Cap", "")
+    file_name = file_name.replace("x-msvideo", "avi")
+    if "3D" not in chapter:
+        return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
+
+
 async def download_media(channel_name, dialog, season, chapter):
     dialog_message_id = dialog.media.document.id
     if not already_downloaded(dialog_message_id):
@@ -92,17 +115,10 @@ async def download_media(channel_name, dialog, season, chapter):
                 tv_show_name = " ".join(tv_show_name.split(" ")[1:])
             abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", tv_show_name.strip(),
                                     tv_show_chapter.strip() + tv_show_media_mime)
-        elif channel_name == "One Piece":
-            tv_show_media_mime = file_name[-4:]
-            parser_chapter = file_name.split(" ")[0].replace("#", " ").replace("Cap", "").strip()
-            tv_show_chapter = "One Piece S01" "E" + parser_chapter
-            tv_show_name = channel_name
-            if ".mp4" in tv_show_chapter:
-                tv_show_chapter = tv_show_chapter.replace(".mp4", "")
-            abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", tv_show_name.strip(),
-                                    tv_show_chapter.strip() + tv_show_media_mime)
         else:
             abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", channel_name, file_name)
+        if channel_name == "One Piece":
+            abs_path = one_piece_path(dialog)
         path_to_file = Path(abs_path)
         if not os.path.exists(path_to_file.parent.parent):
             os.mkdir(path_to_file.parent.parent)
