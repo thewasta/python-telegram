@@ -94,7 +94,7 @@ async def download_media(channel_name, dialog, season, chapter):
                                     tv_show_chapter.strip() + tv_show_media_mime)
         elif channel_name == "One Piece":
             tv_show_media_mime = file_name[-4:]
-            parser_chapter = file_name.split(" ")[0].replace("#", " ").replace("Cap", "")
+            parser_chapter = file_name.split(" ")[0].replace("#", " ").replace("Cap", "").strip()
             tv_show_chapter = "One Piece S01" "E" + parser_chapter
             tv_show_name = channel_name
             if ".mp4" in tv_show_chapter:
