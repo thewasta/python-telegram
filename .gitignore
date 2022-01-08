@@ -3,6 +3,7 @@ config.ini
 dialogs.txt
 anon.*
 */
+!supervisor
 doc.txt
 downloads.txt
 *.log

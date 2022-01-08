@@ -79,7 +79,6 @@ def one_piece_path(dialog) -> str:
     show_name = "One Piece"
     dialog_document = dialog.media.document
     mime_type = dialog_document.mime_type
-
     dialog_message = dialog.message
     file_type = "." + mime_type.split("/")[1]
     if "#" in dialog_message:
@@ -98,31 +97,71 @@ def one_piece_path(dialog) -> str:
         return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
 
 
+def young_sheldon_path(dialog) -> str:
+    show_name = "Young Sheldon {tvdb-328724}"
+    dialog_document = dialog.media.document
+    mime_type = dialog_document.mime_type
+    file_type = mime_type.split("/")[1]
+    dialog_message = dialog.message
+    if re.findall('cap|episodio', dialog_message, flags=re.IGNORECASE):
+        chapter = re.findall("\d{1,2}", dialog_message)[0]
+        if re.search("^Temporada", dialog_message):
+            season = re.findall("\d{1,2}", dialog_message)[0]
+            chapter = re.findall("\d{1,2}", dialog_message)[1]
+            file_name = "Young Sheldon S0{}E{}".format(season, chapter)
+        else:
+            file_name = "Young Sheldon S01E{}".format(chapter)
+        file_name = file_name + "." + file_type
+        return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
+
+
+def palomitas_path(dialog) -> str:
+    dialog_document = dialog.media.document
+    mime_type = dialog_document.mime_type
+    file_type = mime_type.split("/")[1]
+    if hasattr(dialog_document.attributes[0], "file_name"):
+        dialog_message = dialog_document.attributes[0].file_name
+        show_episode_search = re.search("(\d{1,2}x\d{1,2})", dialog_message)
+        if show_episode_search:
+            show_name = dialog_message.replace(show_episode_search.group(), "").replace("@cinepalomitas", "").replace(
+                "_", "").replace("-", "")
+            season = re.findall("\d{1,2}", dialog_message)[0]
+            chapter = re.findall("\d{1,2}", dialog_message)[1]
+            file_type = file_type.replace("x-matroska", "mkv")
+            file_type = file_type.replace("x-matroska", "mkv")
+            file_name = fr'{show_name} S{season}E{chapter}.{file_type}'
+            return os.path.join(config["Telegram"]["folder"], "temp", show_name, file_name)
+
+
 async def download_media(channel_name, dialog, season, chapter):
     dialog_message_id = dialog.media.document.id
     if not already_downloaded(dialog_message_id):
-        mime_type = dialog.media.document.mime_type
-        if dialog.message != "":
-            file_name = dialog.message + "." + mime_type.split("/")[1]
-        elif hasattr(dialog.media.document.attributes[0], "file_name"):
-            file_name = dialog.media.document.attributes[0].file_name
-        else:
-            file_name = "Unknown-{}-{}.{}".format(season, chapter, mime_type.split("/")[1])
-        if channel_name != "South Park" and channel_name != "One Piece":
-            tv_show_media_mime = file_name[-4:]
-            tv_show_with_chapter = file_name.split("@")[0]
-            tv_show_chapter = re.match("[0-9]{1,2}(x)[0-9]{1,2}", tv_show_with_chapter).group()
-            tv_show_name = tv_show_with_chapter.replace(tv_show_chapter, "").replace("-", "")
-            if re.match("^[0-9]", tv_show_name):
-                tv_show_name = " ".join(tv_show_name.split(" ")[1:])
-            abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", tv_show_name.strip(),
-                                    tv_show_chapter.strip() + tv_show_media_mime)
-        else:
-            abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", channel_name, file_name)
+        abs_path = None
+        # mime_type = dialog.media.document.mime_type
+        # if dialog.message != "":
+        #     file_name = dialog.message + "." + mime_type.split("/")[1]
+        # elif hasattr(dialog.media.document.attributes[0], "file_name"):
+        #     file_name = dialog.media.document.attributes[0].file_name
+        # else:
+        #     file_name = "Unknown-{}-{}.{}".format(season, chapter, mime_type.split("/")[1])
+        # if channel_name != "South Park" and channel_name != "One Piece":
+        #     tv_show_media_mime = file_name[-4:]
+        #     tv_show_with_chapter = file_name.split("@")[0]
+        #     tv_show_chapter = re.match("[0-9]{1,2}(x)[0-9]{1,2}", tv_show_with_chapter).group()
+        #     tv_show_name = tv_show_with_chapter.replace(tv_show_chapter, "").replace("-", "")
+        #     if re.match("^[0-9]", tv_show_name):
+        #         tv_show_name = " ".join(tv_show_name.split(" ")[1:])
+        #     abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", tv_show_name.strip(),
+        #                             tv_show_chapter.strip() + tv_show_media_mime)
+        # else:
+        #     abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", channel_name, file_name)
+        if "ZUBY" in channel_name:
+            abs_path = palomitas_path(dialog)
         if channel_name == "One Piece":
             abs_path = one_piece_path(dialog)
+        if "El joven" in channel_name:
+            abs_path = young_sheldon_path(dialog)
         if abs_path:
-
             path_to_file = Path(abs_path)
             if not os.path.exists(path_to_file.parent.parent):
                 os.mkdir(path_to_file.parent.parent)
@@ -131,7 +170,8 @@ async def download_media(channel_name, dialog, season, chapter):
             logging.info("[DEBUG] DOWNLOADING {}".format(str(path_to_file)))
             global file
             file = path_to_file
-            await dialog.download_media(path_to_file, progress_callback=progress)
+            if "prod" in config["Telegram"]["env"] or "local" not in config["Telegram"]["env"]:
+                await dialog.download_media(path_to_file, progress_callback=progress)
             logging.info("[DEBUG] FINISHED {}".format(str(path_to_file)))
             with open("downloads.txt", "a") as file:
                 file.write(str(dialog_message_id) + " " + str(path_to_file))
