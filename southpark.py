@@ -93,7 +93,7 @@ def one_piece_path(dialog) -> str:
     if "145" in file_name:
         file_name = "One Piece S01E" + file_name.replace("Cap", "")
     file_name = file_name.replace("x-msvideo", "avi")
-    if "3D" not in chapter:
+    if "3D" not in chapter and "Película" not in chapter:
         return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
 
 
