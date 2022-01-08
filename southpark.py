@@ -122,15 +122,27 @@ def palomitas_path(dialog) -> str:
     if hasattr(dialog_document.attributes[0], "file_name"):
         dialog_message = dialog_document.attributes[0].file_name
         show_episode_search = re.search("(\d{1,2}x\d{1,2})", dialog_message)
-        if show_episode_search:
-            show_name = dialog_message.replace(show_episode_search.group(), "").replace("@cinepalomitas", "").replace(
-                "_", "").replace("-", "")
-            season = re.findall("\d{1,2}", dialog_message)[0]
-            chapter = re.findall("\d{1,2}", dialog_message)[1]
-            file_type = file_type.replace("x-matroska", "mkv")
-            file_type = file_type.replace("x-matroska", "mkv")
-            file_name = fr'{show_name} S{season}E{chapter}.{file_type}'
-            return os.path.join(config["Telegram"]["folder"], "temp", show_name, file_name)
+        if show_episode_search and "prano" not in dialog_message \
+                and "gitivo" not in dialog_message \
+                and "Hija" not in dialog_message:
+            show_name_remove_chapter = dialog_message.replace(show_episode_search.group(), "")
+            show_name = re.sub("\@.*", "", show_name_remove_chapter).strip()
+            show_name = re.sub("[^a-zA-Z0-9,\s]", "", show_name)
+            if "Hawaii" in show_name:
+                show_name = "Hawaii Five Zero"
+            if "Star Trek" in show_name:
+                show_name = "Stark Trek"
+            if "stacion" in show_name:
+                show_name = "Estacion 19"
+            if "rar" not in mime_type:
+                season = re.findall("\d{1,2}", dialog_message)[0]
+                chapter = re.findall("\d{1,2}", dialog_message)[1]
+                file_type = file_type.replace("x-matroska", "mkv")
+                file_type = file_type.replace("x-msvideo", "avi")
+                file_name = fr'{show_name} S{season}E{chapter}.{file_type}'
+                return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
+            else:
+                return os.path.join(config["Telegram"]["folder"], "tmp", show_name, dialog_message)
 
 
 async def download_media(channel_name, dialog, season, chapter):
