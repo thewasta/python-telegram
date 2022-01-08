@@ -98,7 +98,7 @@ def one_piece_path(dialog) -> str:
 
 
 def young_sheldon_path(dialog) -> str:
-    show_name = "Young Sheldon {tvdb-328724}"
+    show_name = "Young Sheldon {tmdb-71728}"
     dialog_document = dialog.media.document
     mime_type = dialog_document.mime_type
     file_type = mime_type.split("/")[1]
