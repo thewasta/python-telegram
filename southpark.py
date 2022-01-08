@@ -1,4 +1,6 @@
 #!/usr/bin/env python3.8
+import time
+
 from telethon import TelegramClient
 from telethon.tl.types import PeerChannel
 import configparser
@@ -119,19 +121,21 @@ async def download_media(channel_name, dialog, season, chapter):
             abs_path = os.path.join(config["Telegram"]["folder"], "TV Shows", channel_name, file_name)
         if channel_name == "One Piece":
             abs_path = one_piece_path(dialog)
-        path_to_file = Path(abs_path)
-        if not os.path.exists(path_to_file.parent.parent):
-            os.mkdir(path_to_file.parent.parent)
-        if not os.path.exists(path_to_file.parent):
-            os.mkdir(path_to_file.parent)
-        logging.info("[DEBUG] DOWNLOADING {}".format(str(path_to_file)))
-        global file
-        file = path_to_file
-        await dialog.download_media(path_to_file, progress_callback=progress)
-        logging.info("[DEBUG] FINISHED {}".format(str(path_to_file)))
-        with open("downloads.txt", "a") as file:
-            file.write(str(dialog_message_id) + " " + str(path_to_file))
-            file.write("\n")
+        if abs_path:
+
+            path_to_file = Path(abs_path)
+            if not os.path.exists(path_to_file.parent.parent):
+                os.mkdir(path_to_file.parent.parent)
+            if not os.path.exists(path_to_file.parent):
+                os.mkdir(path_to_file.parent)
+            logging.info("[DEBUG] DOWNLOADING {}".format(str(path_to_file)))
+            global file
+            file = path_to_file
+            await dialog.download_media(path_to_file, progress_callback=progress)
+            logging.info("[DEBUG] FINISHED {}".format(str(path_to_file)))
+            with open("downloads.txt", "a") as file:
+                file.write(str(dialog_message_id) + " " + str(path_to_file))
+                file.write("\n")
 
 
 def already_downloaded(media_id):
