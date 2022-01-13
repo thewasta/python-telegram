@@ -198,6 +198,7 @@ def already_downloaded(media_id):
             for line in data_file:
                 if str(media_id) in line:
                     result = True
+                    break
     except:
         logging.info("[DEBUG] downloads.txt not found")
         pass
