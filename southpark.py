@@ -142,7 +142,7 @@ def palomitas_path(dialog) -> str:
                 file_name = fr'{show_name} S{season}E{chapter}.{file_type}'
                 return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
             else:
-                return os.path.join(config["Telegram"]["folder"], "tmp", show_name, dialog_message)
+                os.path.join(config["Telegram"]["folder"], "tmp", show_name, dialog_message)
 
 
 async def download_media(channel_name, dialog, season, chapter):
