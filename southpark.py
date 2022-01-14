@@ -6,8 +6,10 @@ from telethon.tl.types import PeerChannel
 import configparser
 import re
 import os
+import sys
 from pathlib import Path
 import logging
+from FastTelethon import download_file
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -52,7 +54,7 @@ def progress(current, total):
     current_m = bytes_to(current, "m")
     total_b = bytes_to(total, "m")
     path = "/".join(str(file).split("/")[-3:])
-    logging.info("Download total: {}% {} mb/{} mb {}"
+    logger.info("Download total: {}% {} mb/{} mb {}"
                  .format(int((current / total) * 100), current_m, total_b, path))
 
 
@@ -73,6 +75,23 @@ async def main():
             counter += 1
         counter_season += 1
     exit()
+
+
+def setup_custom_logger(name):
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    handler = logging.FileHandler('info.log', mode='w')
+    handler.setFormatter(formatter)
+    screen_handler = logging.StreamHandler(stream=sys.stdout)
+    screen_handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    logger.addHandler(screen_handler)
+    return logger
+
+
+logger = setup_custom_logger("telegram")
 
 
 def one_piece_path(dialog) -> str:
@@ -179,12 +198,13 @@ async def download_media(channel_name, dialog, season, chapter):
                 os.mkdir(path_to_file.parent.parent)
             if not os.path.exists(path_to_file.parent):
                 os.mkdir(path_to_file.parent)
-            logging.info("[DEBUG] DOWNLOADING {}".format(str(path_to_file)))
+            logger.info("[DEBUG] DOWNLOADING {}".format(str(path_to_file)))
             global file
             file = path_to_file
             if "prod" in config["Telegram"]["env"] or "local" not in config["Telegram"]["env"]:
-                await dialog.download_media(path_to_file, progress_callback=progress)
-            logging.info("[DEBUG] FINISHED {}".format(str(path_to_file)))
+                with open(path_to_file, "wb") as out:
+                    await download_file(client, dialog.media.document, out, progress_callback=progress)
+            logger.info("[DEBUG] FINISHED {}".format(str(path_to_file)))
             with open("downloads.txt", "a") as file:
                 file.write(str(dialog_message_id) + " " + str(path_to_file))
                 file.write("\n")
@@ -200,7 +220,7 @@ def already_downloaded(media_id):
                     result = True
                     break
     except:
-        logging.info("[DEBUG] downloads.txt not found")
+        logger.info("[DEBUG] downloads.txt not found")
         pass
     return result
 
@@ -211,9 +231,6 @@ def bot():
 
     client.start()
     client.run_until_disconnected()
-
-
-logging.basicConfig(level=logging.INFO, filename='info.log')
 
 if __name__ == "__main__":
     bot()
