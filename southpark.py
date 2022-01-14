@@ -159,8 +159,6 @@ def palomitas_path(dialog):
                 file_type = file_type.replace("x-matroska", "mkv")
                 file_type = file_type.replace("x-msvideo", "avi")
                 file_name = fr'{show_name} S{season}E{chapter}.{file_type}'
-                if "en el Paraiso" in show_name and "10" in season and "06" in chapter:
-                    return None    
                 return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
             else:
                 os.path.join(config["Telegram"]["folder"], "tmp", show_name, dialog_message)
