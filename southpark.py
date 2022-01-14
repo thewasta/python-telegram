@@ -134,7 +134,7 @@ def young_sheldon_path(dialog) -> str:
         return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
 
 
-def palomitas_path(dialog) -> str:
+def palomitas_path(dialog):
     dialog_document = dialog.media.document
     mime_type = dialog_document.mime_type
     file_type = mime_type.split("/")[1]
@@ -159,6 +159,8 @@ def palomitas_path(dialog) -> str:
                 file_type = file_type.replace("x-matroska", "mkv")
                 file_type = file_type.replace("x-msvideo", "avi")
                 file_name = fr'{show_name} S{season}E{chapter}.{file_type}'
+                if "en el Paraiso" in show_name and "10" in season and "06" in chapter:
+                    return None    
                 return os.path.join(config["Telegram"]["folder"], "TV Shows", show_name, file_name)
             else:
                 os.path.join(config["Telegram"]["folder"], "tmp", show_name, dialog_message)
