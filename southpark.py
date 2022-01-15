@@ -51,6 +51,7 @@ def bytes_to(bytes, to, bsize=1024):
 
 def progress(current, total):
     global file
+
     current_m = bytes_to(current, "m")
     total_b = bytes_to(total, "m")
     path = "/".join(str(file).split("/")[-3:])
